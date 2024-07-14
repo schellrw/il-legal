@@ -58,7 +58,7 @@ def initialize_session_state():
         # )
         index_name = "il-legal"  # name of your pinecone index here
 
-        vectorstore = PineconeVectorStore(index_name=index_name, embeddings=embeddings)
+        vectorstore = PineconeVectorStore(index_name=index_name, embedding=embeddings)
 
         # docsearch = pc.from_existing_index(index_name, embeddings)
 
