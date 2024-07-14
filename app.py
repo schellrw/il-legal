@@ -61,7 +61,7 @@ def initialize_session_state():
 
         #### vectorstore = PineconeVectorStore(index_name=index_name, embedding=embeddings)
 
-        docsearch = pc.from_existing_index(index_name, embeddings)
+        #### docsearch = pc.from_existing_index(index_name, embeddings)
 
         prompt_template = """
             You are a trained bot to guide people about Illinois Crimnal Law Statutes and the Safe-T Act. You will answer user's query with your knowledge and the context provided. 
@@ -86,9 +86,9 @@ def initialize_session_state():
             )
         retrieval_chain = ConversationalRetrievalChain.from_llm(llm=chat,
                                                       chain_type="stuff",
-                                                      retriever= 
-                                                        docsearch.as_retriever(
-                                                        search_kwargs={'k': 2}),
+                                                      retriever=pc,
+                                                        # docsearch.as_retriever(
+                                                        # search_kwargs={'k': 2}),
                                                       return_source_documents=True,
                                                       combine_docs_chain_kwargs={"prompt": PROMPT},
                                                       memory= memory
