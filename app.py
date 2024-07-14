@@ -7,7 +7,8 @@ from langchain_experimental.llms import ChatLlamaAPI
 from langchain_community.embeddings import HuggingFaceEmbeddings
 import pinecone
 # from pinecone import Pinecone, ServerlessSpec
-from langchain_community.vectorstores import Pinecone
+from langchain_pinecone import PineconeVectorStore
+# from langchain_community.vectorstores import Pinecone
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 import streamlit.components.v1 as components
@@ -24,6 +25,7 @@ HUGGINGFACEHUB_API_TOKEN = st.secrets['HUGGINGFACEHUB_API_TOKEN']
 
 # Fetch the API key from environment variables
 # api_key = os.getenv("PINECONE_API_KEY")
+os.environ['PINECONE_API_KEY'] = st.secrets["PINECONE_API_KEY"]
 
 # PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
 
@@ -51,12 +53,14 @@ def initialize_session_state():
         embeddings = download_hugging_face_embeddings()
 
         # Initializing the Pinecone
-        pc = Pinecone(
-            api_key=st.secrets["PINECONE_API_KEY"] ## PINECONE_API_KEY #api_key
-        )
+        # pc = Pinecone(
+        #     api_key=st.secrets["PINECONE_API_KEY"] ## PINECONE_API_KEY #api_key
+        # )
         index_name = "il-legal"  # name of your pinecone index here
 
-        docsearch = pc.from_existing_index(index_name, embeddings)
+        vectorstore = PineconeVectorStore(index_name=index_name, embeddings=embeddings)
+
+        # docsearch = pc.from_existing_index(index_name, embeddings)
 
         prompt_template = """
             You are a trained bot to guide people about Illinois Crimnal Law Statutes and the Safe-T Act. You will answer user's query with your knowledge and the context provided. 
@@ -81,8 +85,10 @@ def initialize_session_state():
             )
         retrieval_chain = ConversationalRetrievalChain.from_llm(llm=chat,
                                                       chain_type="stuff",
-                                                      retriever=docsearch.as_retriever(
+                                                      retriever= vectorstore.as_retriever(
                                                           search_kwargs={'k': 2}),
+                                                        #   docsearch.as_retriever(
+                                                        #   search_kwargs={'k': 2}),
                                                       return_source_documents=True,
                                                       combine_docs_chain_kwargs={"prompt": PROMPT},
                                                       memory= memory
