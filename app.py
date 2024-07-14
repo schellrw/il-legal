@@ -4,7 +4,7 @@ import streamlit as st
 import os
 from llamaapi import LlamaAPI
 from langchain_experimental.llms import ChatLlamaAPI
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 import pinecone
 # from pinecone import Pinecone, ServerlessSpec
 from langchain_community.vectorstores import Pinecone
@@ -13,7 +13,7 @@ from langchain.chains import RetrievalQA
 import streamlit.components.v1 as components
 from langchain_groq import ChatGroq
 from langchain.chains import ConversationalRetrievalChain
-from langchain.memory import ChatMessageHistory, ConversationBufferMemory
+from langchain_community.chat_message_histories import ChatMessageHistory, ConversationBufferMemory
 # import time
 # from dotenv import load_dotenv
 # # Load environment variables from the .env file
