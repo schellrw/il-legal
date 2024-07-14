@@ -13,7 +13,8 @@ from langchain.chains import RetrievalQA
 import streamlit.components.v1 as components
 from langchain_groq import ChatGroq
 from langchain.chains import ConversationalRetrievalChain
-from langchain_community.chat_message_histories import ChatMessageHistory, ConversationBufferMemory
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain.memory import ConversationBufferMemory
 # import time
 # from dotenv import load_dotenv
 # # Load environment variables from the .env file
