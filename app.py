@@ -5,7 +5,8 @@ import os
 from llamaapi import LlamaAPI
 from langchain_experimental.llms import ChatLlamaAPI
 from langchain.embeddings import HuggingFaceEmbeddings
-from pinecone import Pinecone, ServerlessSpec
+import pinecone
+# from pinecone import Pinecone, ServerlessSpec
 from langchain.vectorstores import Pinecone
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
