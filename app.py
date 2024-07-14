@@ -14,12 +14,11 @@ from langchain_groq import ChatGroq
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ChatMessageHistory, ConversationBufferMemory
 # import time
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
+# # Load environment variables from the .env file
+# load_dotenv()
 
 HUGGINGFACEHUB_API_TOKEN = st.secrets['HUGGINGFACEHUB_API_TOKEN']
-
-# Load pc environment variables from the .env file
-load_dotenv()
 
 # Fetch the API key from environment variables
 api_key = os.getenv("PINECONE_API_KEY")
