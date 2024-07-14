@@ -7,7 +7,7 @@ from langchain_experimental.llms import ChatLlamaAPI
 from langchain.embeddings import HuggingFaceEmbeddings
 import pinecone
 # from pinecone import Pinecone, ServerlessSpec
-from langchain.vectorstores import Pinecone
+from langchain_community.vectorstores import Pinecone
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 import streamlit.components.v1 as components
