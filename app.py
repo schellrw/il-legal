@@ -17,7 +17,7 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain.memory import ConversationBufferMemory
 # from langchain_community.vectorstores import Pinecone as LangchainPinecone
-from langchain_pinecone.vectorstores import PineconeVectorStore as LangchainPinecone
+from langchain_pinecone.vectorstores import PineconeVectorStore
 # import time
 # from dotenv import load_dotenv
 # # Load environment variables from the .env file
@@ -65,11 +65,12 @@ def initialize_session_state():
         index_name = "il-legal"  # name of pinecone index here
         ## pinecone_index = pinecone.Index(index_name)
 
+        ####    text_field="text"
 
-        vectorstore = LangchainPinecone(
+        vectorstore = PineconeVectorStore(
             index_name=index_name, ##  pinecone_index, 
             embedding=embeddings,
-            text_field="text",
+            ##    text_field,
             ## metadata_field="metadata",
         )
 
@@ -101,11 +102,11 @@ def initialize_session_state():
         retrieval_chain = ConversationalRetrievalChain.from_llm(
             llm=chat,
             chain_type="stuff",
-            # retriever=vectorstore.as_retriever(),  ##  pinecone.get_retriever(),
-            retriever=vectorstore.similarity_search(
-                query="question",
-                k=2,
-            ),
+            retriever=vectorstore.as_retriever(),  ##  pinecone.get_retriever(),
+            # retriever=vectorstore.similarity_search(
+            #     query="question",
+            #     k=2,
+            # ),
             # retriever=docsearch.as_retriever(
             #     search_kwargs={'k': 2}),
             return_source_documents=True,
