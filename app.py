@@ -88,7 +88,7 @@ def initialize_session_state():
         retrieval_chain = ConversationalRetrievalChain.from_llm(
             llm=chat,
             chain_type="stuff",
-            retriever=pinecone.get_retriever(),
+            retriever=pinecone,  ##  pinecone.get_retriever(),
             # docsearch.as_retriever(
             # search_kwargs={'k': 2}),
             return_source_documents=True,
