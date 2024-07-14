@@ -5,8 +5,8 @@ import os
 from llamaapi import LlamaAPI
 from langchain_experimental.llms import ChatLlamaAPI
 from langchain_community.embeddings import HuggingFaceEmbeddings
-import pinecone
-from pinecone import Pinecone, ServerlessSpec
+# import pinecone
+from pinecone import Pinecone #, ServerlessSpec
 # from langchain_pinecone import PineconeVectorStore
 # from langchain_community.vectorstores import Pinecone
 from langchain.prompts import PromptTemplate
@@ -21,7 +21,11 @@ from langchain.memory import ConversationBufferMemory
 # # Load environment variables from the .env file
 # load_dotenv()
 
+# Fetch the API key from environment variables
 HUGGINGFACEHUB_API_TOKEN = st.secrets['HUGGINGFACEHUB_API_TOKEN']
+PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
+LLAMA_API_KEY = st.secrets["LLAMA_API_KEY"]
+GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 
 # Fetch the API key from environment variables
 # api_key = os.getenv("PINECONE_API_KEY")
@@ -46,18 +50,15 @@ def initialize_session_state():
     if "history" not in st.session_state:
         st.session_state.history = []
     if "conversation" not in st.session_state:
-        llama = LlamaAPI(st.secrets["LLAMA_API_KEY"])
-        # llama = LlamaAPI(os.getenv("LLAMA_API_KEY"))
+        llama = LlamaAPI(LLAMA_API_KEY)
         model = ChatLlamaAPI(client=llama)
-        chat = ChatGroq(temperature=0.5, groq_api_key=st.secrets["GROQ_API_KEY"], model_name="mixtral-8x7b-32768")
+        chat = ChatGroq(temperature=0.5, groq_api_key=GROQ_API_KEY, model_name="mixtral-8x7b-32768")
         
         embeddings = download_hugging_face_embeddings()
 
         # Initializing the Pinecone
-        pc = Pinecone(
-            api_key=st.secrets["PINECONE_API_KEY"] ## PINECONE_API_KEY #api_key
-        )
-        index_name = "il-legal"  # name of your pinecone index here
+        pinecone = Pinecone(api_key=PINECONE_API_KEY)
+        index_name = "il-legal"  # name of pinecone index here
 
         #### vectorstore = PineconeVectorStore(index_name=index_name, embedding=embeddings)
 
@@ -84,15 +85,16 @@ def initialize_session_state():
             chat_memory=message_history,
             return_messages=True,
             )
-        retrieval_chain = ConversationalRetrievalChain.from_llm(llm=chat,
-                                                      chain_type="stuff",
-                                                      retriever=pc,
-                                                        # docsearch.as_retriever(
-                                                        # search_kwargs={'k': 2}),
-                                                      return_source_documents=True,
-                                                      combine_docs_chain_kwargs={"prompt": PROMPT},
-                                                      memory= memory
-                                                     )
+        retrieval_chain = ConversationalRetrievalChain.from_llm(
+            llm=chat,
+            chain_type="stuff",
+            retriever=pinecone.get_retriever(),
+            # docsearch.as_retriever(
+            # search_kwargs={'k': 2}),
+            return_source_documents=True,
+            combine_docs_chain_kwargs={"prompt": PROMPT},
+            memory= memory
+            )
 
         st.session_state.conversation = retrieval_chain
 
