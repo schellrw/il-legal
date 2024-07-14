@@ -5,7 +5,7 @@ import streamlit as st
 from llamaapi import LlamaAPI
 from langchain_experimental.llms import ChatLlamaAPI
 from langchain.embeddings import HuggingFaceEmbeddings
-import pinecone
+from pinecone import Pinecone, ServerlessSpec
 from langchain.vectorstores import Pinecone
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
@@ -41,13 +41,13 @@ def initialize_session_state():
         embeddings = download_hugging_face_embeddings()
 
         # Initializing the Pinecone
-        pinecone.init(
+        pc = Pinecone(
             api_key=st.secrets["PINECONE_API_KEY"],  # find at app.pinecone.io
-            environment=st.secrets["PINECONE_API_ENV"]  # next to api key in console
+            # environment=st.secrets["PINECONE_API_ENV"]  # next to api key in console
         )
         index_name = "il-legal"  # name of your pinecone index here
 
-        docsearch = Pinecone.from_existing_index(index_name, embeddings)
+        docsearch = pc.from_existing_index(index_name, embeddings)
 
         prompt_template = """
             You are a trained bot to guide people about Illinois Crimnal Law Statutes and the Safe-T Act. You will answer user's query with your knowledge and the context provided. 
