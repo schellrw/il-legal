@@ -61,8 +61,8 @@ def initialize_session_state():
         # Initializing the Pinecone
         # pinecone = Pinecone(api_key=PINECONE_API_KEY)
         pc = Pinecone(api_key=PINECONE_API_KEY)
-        index = pc.Index("il-legal")
-        # index_name = "il-legal"  # name of pinecone index here
+        # index = pc.Index("il-legal")
+        index_name = "il-legal"  # name of pinecone index here
         ## pinecone_index = pinecone.Index(index_name)
 
 
@@ -72,7 +72,7 @@ def initialize_session_state():
 
         #### vectorstore = PineconeVectorStore(index_name=index_name, embedding=embeddings)
 
-        docsearch = pc.from_existing_index(index, embeddings)
+        docsearch = pc.from_existing_index(index_name, embeddings)
 
         prompt_template = """
             You are a trained bot to guide people about Illinois Crimnal Law Statutes and the Safe-T Act. You will answer user's query with your knowledge and the context provided. 
