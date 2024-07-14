@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Literal
 import streamlit as st
-# import os
+import os
 from llamaapi import LlamaAPI
 from langchain_experimental.llms import ChatLlamaAPI
 from langchain.embeddings import HuggingFaceEmbeddings
@@ -14,9 +14,17 @@ from langchain_groq import ChatGroq
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ChatMessageHistory, ConversationBufferMemory
 # import time
+from dotenv import load_dotenv
 
 HUGGINGFACEHUB_API_TOKEN = st.secrets['HUGGINGFACEHUB_API_TOKEN']
-PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
+
+# Load pc environment variables from the .env file
+load_dotenv()
+
+# Fetch the API key from environment variables
+api_key = os.getenv("PINECONE_API_KEY")
+
+# PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
 
 @dataclass
 class Message:
@@ -43,7 +51,7 @@ def initialize_session_state():
 
         # Initializing the Pinecone
         pc = Pinecone(
-            api_key=PINECONE_API_KEY
+            api_key=api_key #PINECONE_API_KEY
         )
         index_name = "il-legal"  # name of your pinecone index here
 
