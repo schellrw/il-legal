@@ -23,7 +23,7 @@ from langchain.memory import ConversationBufferMemory
 HUGGINGFACEHUB_API_TOKEN = st.secrets['HUGGINGFACEHUB_API_TOKEN']
 
 # Fetch the API key from environment variables
-api_key = os.getenv("PINECONE_API_KEY")
+# api_key = os.getenv("PINECONE_API_KEY")
 
 # PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
 
@@ -52,7 +52,7 @@ def initialize_session_state():
 
         # Initializing the Pinecone
         pc = Pinecone(
-            api_key=api_key #PINECONE_API_KEY
+            api_key=st.secrets["PINECONE_API_KEY"] ## PINECONE_API_KEY #api_key
         )
         index_name = "il-legal"  # name of your pinecone index here
 
