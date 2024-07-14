@@ -1,0 +1,9 @@
+dataclasses==0.6
+langchain==0.2.7
+langchain-experimental==0.0.62
+langchain-groq==0.1.6
+llamaapi==0.1.36
+pinecone==4.0.0
+pinecone-client==4.1.2
+streamlit==1.36.0
+typing==3.7.4.3
