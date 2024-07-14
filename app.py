@@ -16,6 +16,7 @@ from langchain.memory import ChatMessageHistory, ConversationBufferMemory
 # import time
 
 HUGGINGFACEHUB_API_TOKEN = st.secrets['HUGGINGFACEHUB_API_TOKEN']
+PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
 
 @dataclass
 class Message:
@@ -42,8 +43,7 @@ def initialize_session_state():
 
         # Initializing the Pinecone
         pc = Pinecone(
-            api_key=st.secrets["PINECONE_API_KEY"],  # find at app.pinecone.io
-            # environment=st.secrets["PINECONE_API_ENV"]  # next to api key in console
+            api_key=PINECONE_API_KEY
         )
         index_name = "il-legal"  # name of your pinecone index here
 
