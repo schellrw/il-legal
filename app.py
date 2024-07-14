@@ -61,7 +61,7 @@ def initialize_session_state():
         pinecone = Pinecone(api_key=PINECONE_API_KEY)
         index_name = "il-legal"  # name of pinecone index here
         pinecone_index = pinecone.Index(index_name)
-        vectorstore = LangchainPinecone(index=pinecone_index, embedding_function=embeddings)
+        vectorstore = LangchainPinecone(index=pinecone_index, embedding=embeddings)
 
         #### vectorstore = PineconeVectorStore(index_name=index_name, embedding=embeddings)
 
