@@ -32,7 +32,8 @@ def initialize_session_state():
     if "conversation" not in st.session_state:
         embeddings = download_hugging_face_embeddings()
         pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
-        index = pc.Index("il-legal")
+        index = pc.Index("quickstart")
+        # index = pc.Index("il-legal")
         # docsearch = PineconeVectorStore.from_existing_index(index=index, embedding=embeddings)
         docsearch = PineconeVectorStore.from_existing_index(index_name="il-legal", embedding=embeddings)
         
