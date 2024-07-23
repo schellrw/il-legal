@@ -1,40 +1,18 @@
 from dataclasses import dataclass
 from typing import Literal
 import streamlit as st
-import os
-from llamaapi import LlamaAPI
-from langchain_experimental.llms import ChatLlamaAPI
-from langchain_community.embeddings import HuggingFaceEmbeddings
-# import pinecone
-from pinecone import Pinecone #, ServerlessSpec
-# from langchain_pinecone import PineconeVectorStore
-# from langchain_community.vectorstores import Pinecone
+from langchain_pinecone.vectorstores import PineconeVectorStore
+from langchain_huggingface import HuggingFaceEmbeddings, HuggingFaceEndpoint
 from langchain.prompts import PromptTemplate
-from langchain.chains import RetrievalQA
-import streamlit.components.v1 as components
-from langchain_groq import ChatGroq
-from langchain.chains import ConversationalRetrievalChain
+from pinecone import Pinecone #, ServerlessSpec
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain.memory import ConversationBufferMemory
-# from langchain_community.vectorstores import Pinecone as LangchainPinecone
-from langchain_pinecone.vectorstores import PineconeVectorStore
-# import time
-# from dotenv import load_dotenv
-# # Load environment variables from the .env file
-# load_dotenv()
+from langchain.chains import ConversationalRetrievalChain
+from dotenv import load_dotenv
+import os
 
-# Fetch the API key from environment variables
-HUGGINGFACEHUB_API_TOKEN = st.secrets['HUGGINGFACEHUB_API_TOKEN']
-PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
-LLAMA_API_KEY = st.secrets["LLAMA_API_KEY"]
-GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
-
-# Fetch the API key from environment variables
-# api_key = os.getenv("PINECONE_API_KEY")
-
-##  os.environ['PINECONE_API_KEY'] = st.secrets["PINECONE_API_KEY"]
-
-##  PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
+# Load environment variables from the .env file
+load_dotenv()
 
 @dataclass
 class Message:
@@ -52,31 +30,18 @@ def initialize_session_state():
     if "history" not in st.session_state:
         st.session_state.history = []
     if "conversation" not in st.session_state:
-        llama = LlamaAPI(LLAMA_API_KEY)
-        model = ChatLlamaAPI(client=llama)
-        chat = ChatGroq(temperature=0.5, groq_api_key=GROQ_API_KEY, model_name="mixtral-8x7b-32768")
-        
         embeddings = download_hugging_face_embeddings()
-
-        # Initializing the Pinecone
-        # pinecone = Pinecone(api_key=PINECONE_API_KEY)
-        pc = Pinecone(api_key=PINECONE_API_KEY)
-        # index = pc.Index("il-legal")
-        index_name = "il-legal"  # name of pinecone index here
-        ## pinecone_index = pinecone.Index(index_name)
-
-        ####    text_field="text"
-
-        vectorstore = PineconeVectorStore(
-            index_name=index_name, ##  pinecone_index, 
-            embedding=embeddings,
-            ##    text_field,
-            ## metadata_field="metadata",
+        pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
+        index = pc.Index("il-legal")
+        docsearch = PineconeVectorStore.from_existing_index(index=index, embedding=embeddings)
+        
+        repo_id = "mistralai/Mixtral-8x7B-Instruct-v0.1"
+        llm = HuggingFaceEndpoint(
+            repo_id=repo_id, 
+            model_kwargs={"huggingface_api_token":os.environ["HUGGINGFACEHUB_API_TOKEN"]},
+            temperature=0.5,
+            top_k=10,
         )
-
-        #### vectorstore = PineconeVectorStore(index_name=index_name, embedding=embeddings)
-
-        #### docsearch = pc.from_existing_index(index_name, embeddings)
 
         prompt_template = """
             You are a trained bot to guide people about Illinois Crimnal Law Statutes and the Safe-T Act. You will answer user's query with your knowledge and the context provided. 
@@ -89,7 +54,9 @@ def initialize_session_state():
             Helpful answer:
             """
 
-        PROMPT = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
+        PROMPT = PromptTemplate(
+            template=prompt_template, 
+            input_variables=["context", "question"])
         
         #chain_type_kwargs = {"prompt": PROMPT}
         message_history = ChatMessageHistory()
@@ -100,15 +67,9 @@ def initialize_session_state():
             return_messages=True,
             )
         retrieval_chain = ConversationalRetrievalChain.from_llm(
-            llm=chat,
+            llm=llm,
             chain_type="stuff",
-            retriever=vectorstore.as_retriever(),  ##  pinecone.get_retriever(),
-            # retriever=vectorstore.similarity_search(
-            #     query="question",
-            #     k=2,
-            # ),
-            # retriever=docsearch.as_retriever(
-            #     search_kwargs={'k': 2}),
+            retriever=docsearch.as_retriever(),
             return_source_documents=True,
             combine_docs_chain_kwargs={"prompt": PROMPT},
             memory= memory
