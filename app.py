@@ -34,7 +34,7 @@ def initialize_session_state():
         pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
         index = pc.Index("il-legal")
         # docsearch = PineconeVectorStore.from_existing_index(index=index, embedding=embeddings)
-        docsearch = PineconeVectorStore.from_existing_index(index, embeddings)
+        docsearch = PineconeVectorStore.from_existing_index(index_name=index, embedding=embeddings)
         
         repo_id = "mistralai/Mixtral-8x7B-Instruct-v0.1"
         llm = HuggingFaceEndpoint(
