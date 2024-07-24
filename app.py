@@ -73,7 +73,10 @@ def initialize_session_state():
         retrieval_chain = ConversationalRetrievalChain.from_llm(
             llm=llm,
             chain_type="stuff",
-            retriever=docsearch.as_retriever(),
+            retriever=docsearch.as_retriever(
+                search_kwargs={
+                    'filter': {'source': 'user_id'},
+                    }),
             return_source_documents=True,
             combine_docs_chain_kwargs={"prompt": PROMPT},
             memory= memory
