@@ -3,7 +3,9 @@ secret/
 metro/
 cache/
 old/
-notebooks/
+# notebooks/
+nbs/
+prompts/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -33,9 +33,7 @@ def initialize_session_state():
         embeddings = download_hugging_face_embeddings()
         pc = Pinecone(api_key=st.secrets["PINECONE_API_KEY"])
         # pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
-        # index = pc.Index("quickstart")
         index = pc.Index("il-legal")
-        # docsearch = PineconeVectorStore.from_existing_index(index=index, embedding=embeddings)
         docsearch = PineconeVectorStore.from_existing_index(index_name="il-legal", embedding=embeddings)
         
         repo_id = "mistralai/Mixtral-8x7B-Instruct-v0.1"
@@ -146,3 +144,4 @@ with prompt_placeholder:
         type="primary",
         on_click=on_click_callback,
     )
+
