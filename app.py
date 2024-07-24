@@ -4,7 +4,8 @@ import streamlit as st
 from langchain_pinecone.vectorstores import PineconeVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings, HuggingFaceEndpoint
 from langchain.prompts import PromptTemplate
-from pinecone import Pinecone #, ServerlessSpec
+# from pinecone import Pinecone #, ServerlessSpec
+from pinecone.grpc import PineconeGRPC as Pinecone
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
