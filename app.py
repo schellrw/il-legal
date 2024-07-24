@@ -8,11 +8,11 @@ from pinecone import Pinecone #, ServerlessSpec
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-from dotenv import load_dotenv
-import os
+# from dotenv import load_dotenv
+# import os
 
 # Load environment variables from the .env file
-load_dotenv()
+# load_dotenv()
 
 @dataclass
 class Message:
@@ -40,8 +40,9 @@ def initialize_session_state():
         
         repo_id = "mistralai/Mixtral-8x7B-Instruct-v0.1"
         llm = HuggingFaceEndpoint(
-            repo_id=repo_id, 
-            model_kwargs={"huggingface_api_token":os.environ["HUGGINGFACEHUB_API_TOKEN"]},
+            repo_id=repo_id,
+            model_kwargs={"huggingface_api_token":st.secrets["HUGGINGFACEHUB_API_TOKEN"]},
+            # model_kwargs={"huggingface_api_token":os.environ["HUGGINGFACEHUB_API_TOKEN"]},
             temperature=0.5,
             top_k=10,
         )
