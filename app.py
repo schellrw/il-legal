@@ -125,7 +125,7 @@ st.markdown(
 )
 
 chat_placeholder = st.container()
-# prompt_placeholder = st.form("chat-form")
+prompt_placeholder = st.form("chat-form")
 # prompt_placeholder = st.container()
 # prompt_placeholder = st.chat_input("Chat", key="human_prompt")
 
@@ -133,11 +133,11 @@ with chat_placeholder:
     for chat in st.session_state.history:
         st.markdown(f"{chat.origin} : {chat.message}")
 
-        st.chat_input(
-        "Chat", 
-        # key="human_prompt",
-        on_submit=on_click_callback
-        )
+        # st.chat_input(
+        # "Chat", 
+        # # key="human_prompt",
+        # on_submit=on_click_callback
+        # )
 
 # with prompt_placeholder:
 #     st.chat_input(
@@ -149,16 +149,17 @@ with chat_placeholder:
 #         "Submit",
 #         on_click=on_click_callback)
 
-    # st.markdown("**Chat**")
-    # cols = st.columns((6, 1))
-    # cols[0].text_input(
-    #     "Chat",
-    #     label_visibility="collapsed",
-    #     key="human_prompt",
-    # )
-    # cols[1].form_submit_button(
-    #     "Submit",
-    #     type="primary",
-    #     on_click=on_click_callback,
-    # )
+with prompt_placeholder:
+    st.markdown("**Chat**")
+    cols = st.columns((6, 1))
+    cols[0].text_input(
+        "Chat",
+        label_visibility="collapsed",
+        key="human_prompt",
+    )
+    cols[1].form_submit_button(
+        "Submit",
+        type="primary",
+        on_click=on_click_callback,
+    )
 
