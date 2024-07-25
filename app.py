@@ -132,16 +132,21 @@ with chat_placeholder:
         st.markdown(f"{chat.origin} : {chat.message}")
 
 with prompt_placeholder:
-    st.markdown("**Chat**")
-    cols = st.columns((6, 1))
-    cols[0].text_input(
-        "Chat",
-        label_visibility="collapsed",
-        key="human_prompt",
-    )
-    cols[1].form_submit_button(
-        "Submit",
-        type="primary",
-        on_click=on_click_callback,
-    )
+    st.chat_input(
+        "Chat", 
+        key="human_prompt", 
+        on_change=on_click_callback)
+
+    # st.markdown("**Chat**")
+    # cols = st.columns((6, 1))
+    # cols[0].text_input(
+    #     "Chat",
+    #     label_visibility="collapsed",
+    #     key="human_prompt",
+    # )
+    # cols[1].form_submit_button(
+    #     "Submit",
+    #     type="primary",
+    #     on_click=on_click_callback,
+    # )
 
