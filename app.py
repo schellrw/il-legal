@@ -135,7 +135,7 @@ with chat_placeholder:
 
         st.chat_input(
         "Chat", 
-        key="human_prompt",
+        # key="human_prompt",
         on_submit=on_click_callback
         )
 
