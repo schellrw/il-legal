@@ -124,9 +124,9 @@ st.markdown(
     """
 )
 
-chat_placeholder = st.container("chat-container")
+chat_placeholder = st.container()
 # prompt_placeholder = st.form("chat-form")
-prompt_placeholder = st.container("prompt-container")
+prompt_placeholder = st.container()
 # prompt_placeholder = st.chat_input("Chat", key="human_prompt")
 
 with chat_placeholder:
