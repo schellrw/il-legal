@@ -125,8 +125,8 @@ st.markdown(
 )
 
 chat_placeholder = st.container()
-# prompt_placeholder = st.form("chat-form")
-prompt_placeholder = st.container()
+prompt_placeholder = st.form("chat-form")
+# prompt_placeholder = st.container()
 # prompt_placeholder = st.chat_input("Chat", key="human_prompt")
 
 with chat_placeholder:
@@ -136,12 +136,12 @@ with chat_placeholder:
 with prompt_placeholder:
     st.chat_input(
         "Chat", 
-        ##  key="human_prompt",
-        on_submit=on_click_callback
+        key="human_prompt",
+        # on_submit=on_click_callback
         )
-    # st.form_submit_button(
-    #     "Submit", 
-    #     on_submit=on_click_callback)
+    st.form_submit_button(
+        "Submit",
+        on_submit=on_click_callback)
 
     # st.markdown("**Chat**")
     # cols = st.columns((6, 1))
