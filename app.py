@@ -141,7 +141,7 @@ with prompt_placeholder:
         )
     st.form_submit_button(
         "Submit",
-        on_submit=on_click_callback)
+        on_click=on_click_callback)
 
     # st.markdown("**Chat**")
     # cols = st.columns((6, 1))
