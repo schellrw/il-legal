@@ -135,7 +135,7 @@ with prompt_placeholder:
     st.chat_input(
         "Chat", 
         key="human_prompt", 
-        on_change=on_click_callback)
+        on_submit=on_click_callback)
 
     # st.markdown("**Chat**")
     # cols = st.columns((6, 1))
