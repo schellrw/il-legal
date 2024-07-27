@@ -82,16 +82,28 @@ def initialize_session_state():
 
         st.session_state.conversation = retrieval_chain
 
+# def on_click_callback():
+#     human_prompt = st.session_state.human_prompt
+#     st.session_state.human_prompt=""
+#     response = st.session_state.conversation(
+#         human_prompt
+#     )
+#     llm_response = response['answer']
+#     st.session_state.history.append(
+#         Message("👤 Human", human_prompt)
+#     )
+#     st.session_state.history.append(
+#         Message("👨🏻‍⚖️ Ai", llm_response)
+#     )
 
-def on_click_callback():
-    human_prompt = st.session_state.human_prompt
-    st.session_state.human_prompt=""
-    response = st.session_state.conversation(
-        human_prompt
-    )
+
+def on_submit(user_input):
+    response = st.session_state.conversation({
+        "question":user_input
+    })
     llm_response = response['answer']
     st.session_state.history.append(
-        Message("👤 Human", human_prompt)
+        Message("👤 Human", user_input)
     )
     st.session_state.history.append(
         Message("👨🏻‍⚖️ Ai", llm_response)
@@ -125,46 +137,12 @@ st.markdown(
 )
 
 chat_placeholder = st.container()
-prompt_placeholder = st.form("chat-form")
-# prompt_placeholder = st.container()
-# prompt_placeholder = st.chat_input("Chat", key="human_prompt")
 
 with chat_placeholder:
     for chat in st.session_state.history:
         st.markdown(f"{chat.origin} : {chat.message}")
 
-        # st.chat_input(
-        # "Chat", 
-        # # key="human_prompt",
-        # on_submit=on_click_callback
-        # )
+user_input = st.chat_input("Enter your question here...")
 
-# with prompt_placeholder:
-#     st.chat_input(
-#         "Chat", 
-#         key="human_prompt",
-#         # on_submit=on_click_callback
-#         )
-#     st.form_submit_button(
-#         "Submit",
-#         on_click=on_click_callback)
-
-with prompt_placeholder:
-    st.markdown("**Chat**")
-    cols = st.columns((6, 1))
-    # cols[0].chat_input(
-    #     "Chat",
-    #     # label_visibility="collapsed",
-    #     key="human_prompt",
-    # )    
-    cols[0].text_input(
-        "Chat",
-        label_visibility="collapsed",
-        key="human_prompt",
-    )
-    cols[1].form_submit_button(
-        "Submit",
-        type="primary",
-        on_click=on_click_callback,
-    )
-
+if user_input:
+    on_submit(user_input)
