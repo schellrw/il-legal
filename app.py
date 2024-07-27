@@ -98,16 +98,20 @@ def initialize_session_state():
 
 
 def on_submit(user_input):
-    response = st.session_state.conversation({
-        "question":user_input
-    })
-    llm_response = response['answer']
-    st.session_state.history.append(
-        Message("👤 Human", user_input)
-    )
-    st.session_state.history.append(
-        Message("👨🏻‍⚖️ Ai", llm_response)
-    )
+    if user_input:
+        print(f"User Input: {user_input}")
+        response = st.session_state.conversation({
+            "question":user_input
+        })
+        llm_response = response['answer']
+        print(f"LLM Response: {llm_response}")
+        st.session_state.history.append(
+            Message("👤 Human", user_input)
+        )
+        st.session_state.history.append(
+            Message("👨🏻‍⚖️ Ai", llm_response)
+        )
+        st.experimental_rerun()
 
 
 initialize_session_state()
