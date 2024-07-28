@@ -1,10 +1,9 @@
 # user-defined virtual environments
 secret/
-metro/
 cache/
 old/
 # notebooks/
-nbs/
+# nbs/
 prompts/
 
 # Byte-compiled / optimized / DLL files
