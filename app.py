@@ -8,11 +8,32 @@ from pinecone import Pinecone #, ServerlessSpec
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-# from dotenv import load_dotenv
-# import os
+from dotenv import load_dotenv
+import os
 
 # Load environment variables from the .env file
-# load_dotenv()
+load_dotenv()
+
+# Fetch environment variables
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+PINECONE_INDEX = os.getenv("PINECONE_INDEX")
+HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+EMBEDDINGS_MODEL = os.getenv("EMBEDDINGS_MODEL")
+CHAT_MODEL = os.getenv("CHAT_MODEL")
+
+# Check if environment variables are None
+# Supplement with streamlit secrets if None
+if PINECONE_API_KEY is None:
+    PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
+if PINECONE_INDEX is None:
+    PINECONE_INDEX = st.secrets["PINECONE_INDEX"]
+if HUGGINGFACE_API_TOKEN is None:
+    HUGGINGFACE_API_TOKEN = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
+if EMBEDDINGS_MODEL is None:
+    EMBEDDINGS_MODEL = st.secrets["EMBEDDINGS_MODEL"]
+if CHAT_MODEL is None:
+    CHAT_MODEL = st.secrets["CHAT_MODEL"]
+
 
 @dataclass
 class Message:
@@ -22,7 +43,7 @@ class Message:
 
 
 def download_hugging_face_embeddings():
-    embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
+    embeddings = HuggingFaceEmbeddings(model_name=EMBEDDINGS_MODEL)
     return embeddings
 
 
@@ -31,18 +52,16 @@ def initialize_session_state():
         st.session_state.history = []
     if "conversation" not in st.session_state:
         embeddings = download_hugging_face_embeddings()
-        pc = Pinecone(api_key=st.secrets["PINECONE_API_KEY"])
-        # pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
-        index = pc.Index("il-legal")
-        docsearch = PineconeVectorStore.from_existing_index(index_name="il-legal", embedding=embeddings)
+        pc = Pinecone(api_key=PINECONE_API_KEY)
+        index = pc.Index(PINECONE_INDEX)
+        docsearch = PineconeVectorStore.from_existing_index(index_name=PINECONE_INDEX, embedding=embeddings)
         
-        repo_id = "mistralai/Mixtral-8x7B-Instruct-v0.1"
+        repo_id = CHAT_MODEL
         llm = HuggingFaceEndpoint(
             repo_id=repo_id,
-            model_kwargs={"huggingface_api_token":st.secrets["HUGGINGFACEHUB_API_TOKEN"]},
-            # model_kwargs={"huggingface_api_token":os.environ["HUGGINGFACEHUB_API_TOKEN"]},
-            temperature=0.5,
-            top_k=10,
+            model_kwargs={"huggingface_api_token":HUGGINGFACE_API_TOKEN},
+            temperature=0.5,  ## make st.slider, subsequently
+            top_k=10,  ## make st.slider, subsequently
         )
 
         prompt_template = """
@@ -135,7 +154,7 @@ st.markdown(
     
     🤖 **Getting Started:**
     
-    Feel free to ask any legal question related to Illinois law, using keywords like "pre-trial release," "motions," or "procedure." I'm here to assist you!
+    Feel free to ask any legal question related to Illinois criminal law. I'm here to assist you!
     Let's get started! How may I help you today?
     """
 )
