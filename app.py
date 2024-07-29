@@ -130,7 +130,7 @@ def on_submit(user_input):
         st.session_state.history.append(
             Message("👨🏻‍⚖️ Ai", llm_response)
         )
-        st.experimental_rerun()
+        st.rerun()
 
 
 initialize_session_state()
