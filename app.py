@@ -38,7 +38,7 @@ if CHAT_MODEL is None:
 @dataclass
 class Message:
     """Class for keeping track of a chat message."""
-    origin: Literal["👤 Human", "👨🏻‍⚖️ Ai"]
+    origin: Literal["🗣️ Human", "🧑‍⚖️ AI Lawyer"]  #["👤 Human", "🗿 AI Lawyer"]
     message: str
 
 
@@ -109,26 +109,25 @@ def initialize_session_state():
 #     )
 #     llm_response = response['answer']
 #     st.session_state.history.append(
-#         Message("👤 Human", human_prompt)
+#         Message("🗣️ Human", human_prompt)
 #     )
 #     st.session_state.history.append(
-#         Message("👨🏻‍⚖️ Ai", llm_response)
+#         Message("🧑‍⚖️ AI Lawyer", llm_response)
 #     )
-
 
 def on_submit(user_input):
     if user_input:
-        print(f"User Input: {user_input}")
+        # print(f"User Input: {user_input}")
         response = st.session_state.conversation({
             "question":user_input
         })
         llm_response = response['answer']
-        print(f"LLM Response: {llm_response}")
+        # print(f"LLM Response: {llm_response}")
         st.session_state.history.append(
-            Message("👤 Human", user_input)
+            Message("🗣️ Human", user_input)
         )
         st.session_state.history.append(
-            Message("👨🏻‍⚖️ Ai", llm_response)
+            Message("🧑‍⚖️ AI Lawyer", llm_response)
         )
         st.rerun()
 
