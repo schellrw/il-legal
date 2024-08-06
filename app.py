@@ -15,24 +15,31 @@ import os
 load_dotenv()
 
 # Fetch environment variables
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_INDEX = os.getenv("PINECONE_INDEX")
-HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
-EMBEDDINGS_MODEL = os.getenv("EMBEDDINGS_MODEL")
-CHAT_MODEL = os.getenv("CHAT_MODEL")
+try:
+    PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+    PINECONE_INDEX = os.getenv("PINECONE_INDEX")
+    HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+    EMBEDDINGS_MODEL = os.getenv("EMBEDDINGS_MODEL")
+    CHAT_MODEL = os.getenv("CHAT_MODEL")
+except:
+    PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
+    PINECONE_INDEX = st.secrets["PINECONE_INDEX"]
+    HUGGINGFACE_API_TOKEN = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
+    EMBEDDINGS_MODEL = st.secrets["EMBEDDINGS_MODEL"]
+    CHAT_MODEL = st.secrets["CHAT_MODEL"]
 
 # Check if environment variables are None
 # Supplement with streamlit secrets if None
-if PINECONE_API_KEY is None:
-    PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
-if PINECONE_INDEX is None:
-    PINECONE_INDEX = st.secrets["PINECONE_INDEX"]
-if HUGGINGFACE_API_TOKEN is None:
-    HUGGINGFACE_API_TOKEN = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
-if EMBEDDINGS_MODEL is None:
-    EMBEDDINGS_MODEL = st.secrets["EMBEDDINGS_MODEL"]
-if CHAT_MODEL is None:
-    CHAT_MODEL = st.secrets["CHAT_MODEL"]
+# if PINECONE_API_KEY is None:
+#     PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
+# if PINECONE_INDEX is None:
+#     PINECONE_INDEX = st.secrets["PINECONE_INDEX"]
+# if HUGGINGFACE_API_TOKEN is None:
+#     HUGGINGFACE_API_TOKEN = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
+# if EMBEDDINGS_MODEL is None:
+#     EMBEDDINGS_MODEL = st.secrets["EMBEDDINGS_MODEL"]
+# if CHAT_MODEL is None:
+#     CHAT_MODEL = st.secrets["CHAT_MODEL"]
 
 
 @dataclass
