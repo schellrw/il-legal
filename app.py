@@ -15,13 +15,14 @@ import os
 load_dotenv()
 
 # Fetch environment variables
-try:
-    PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-    PINECONE_INDEX = os.getenv("PINECONE_INDEX")
-    HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
-    EMBEDDINGS_MODEL = os.getenv("EMBEDDINGS_MODEL")
-    CHAT_MODEL = os.getenv("CHAT_MODEL")
-except:
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+PINECONE_INDEX = os.getenv("PINECONE_INDEX")
+HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+EMBEDDINGS_MODEL = os.getenv("EMBEDDINGS_MODEL")
+CHAT_MODEL = os.getenv("CHAT_MODEL")
+
+# Supplement with streamlit secrets if None
+if None in [PINECONE_API_KEY, PINECONE_INDEX, HUGGINGFACE_API_TOKEN, EMBEDDINGS_MODEL, CHAT_MODEL]:
     PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
     PINECONE_INDEX = st.secrets["PINECONE_INDEX"]
     HUGGINGFACE_API_TOKEN = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
