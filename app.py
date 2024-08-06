@@ -29,20 +29,6 @@ if None in [PINECONE_API_KEY, PINECONE_INDEX, HUGGINGFACE_API_TOKEN, EMBEDDINGS_
     EMBEDDINGS_MODEL = st.secrets["EMBEDDINGS_MODEL"]
     CHAT_MODEL = st.secrets["CHAT_MODEL"]
 
-# Check if environment variables are None
-# Supplement with streamlit secrets if None
-# if PINECONE_API_KEY is None:
-#     PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
-# if PINECONE_INDEX is None:
-#     PINECONE_INDEX = st.secrets["PINECONE_INDEX"]
-# if HUGGINGFACE_API_TOKEN is None:
-#     HUGGINGFACE_API_TOKEN = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
-# if EMBEDDINGS_MODEL is None:
-#     EMBEDDINGS_MODEL = st.secrets["EMBEDDINGS_MODEL"]
-# if CHAT_MODEL is None:
-#     CHAT_MODEL = st.secrets["CHAT_MODEL"]
-
-
 @dataclass
 class Message:
     """Class for keeping track of a chat message."""
