@@ -8,12 +8,14 @@ from pinecone import Pinecone #, ServerlessSpec
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
+from langchain.retrievers import MergerRetriever
 from dotenv import load_dotenv
 import os
 from utils import process
-from langchain_community.vectorstores import Chroma
+# from langchain_community.vectorstores import Chroma
 import chromadb
 from chromadb.config import Settings
+from chromadb.utils import embedding_functions
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -52,16 +54,36 @@ def initialize_session_state():
         embeddings = download_hugging_face_embeddings()
         pc = Pinecone(api_key=PINECONE_API_KEY)
         index = pc.Index(PINECONE_INDEX)
-        docsearch = PineconeVectorStore.from_existing_index(index_name=PINECONE_INDEX, embedding=embeddings)
+        pinecone_retriever = PineconeVectorStore.from_existing_index(
+            index_name=PINECONE_INDEX,
+            embedding=embeddings,
+            search_kwargs={
+                    'filter': {'source': 'user_id'},
+                    }).as_retriever()
+        # docsearch = PineconeVectorStore.from_existing_index(index_name=PINECONE_INDEX, embedding=embeddings)
         
         # Initialize Chroma for client uploads
-        # settings = Settings()
-        # chroma_client = chromadb.Client(settings)
+        settings = Settings()
+        chroma_client = chromadb.Client(settings)
+        embedding_function = embedding_functions.HuggingFaceEmbeddingFunction(
+            api_key=HUGGINGFACE_API_TOKEN,
+            model_name=EMBEDDINGS_MODEL
+        )
+        st.session_state.chroma_collection = chroma_client.create_collection(
+            name="user_docs",
+            embedding_function=embedding_function
+        )
+
+        # Create a Chroma retriever
+        chroma_retriever = st.session_state.chroma_collection.as_retriever()
+        
+        # Combine the retrievers
+        combined_retriever = MergerRetriever(retrievers=[pinecone_retriever, chroma_retriever])
 
         # Get the collection
         # collection = chroma_client.get_collection(collection_name)
         
-        st.session_state.chroma_db = Chroma(embedding_function=embeddings) #, client=docsearch.client)
+        # st.session_state.chroma_db = Chroma(embedding_function=embeddings) #, client=docsearch.client)
         #     chroma_db_impl="duckdb+parquet",
         #     persist_directory="db",
         #     anonymized_telemetry=False,
@@ -103,10 +125,11 @@ def initialize_session_state():
         retrieval_chain = ConversationalRetrievalChain.from_llm(
             llm=llm,
             chain_type="stuff",
-            retriever=docsearch.as_retriever(
-                search_kwargs={
-                    'filter': {'source': 'user_id'},
-                    }),
+            retriever=combined_retriever,
+            # retriever=docsearch.as_retriever(
+            #     search_kwargs={
+            #         'filter': {'source': 'user_id'},
+            #         }),
             return_source_documents=True,
             combine_docs_chain_kwargs={"prompt": PROMPT},
             memory= memory
@@ -128,6 +151,13 @@ def on_submit(user_input):
         st.session_state.history.append(
             Message("🧑‍⚖️ AI Lawyer", llm_response)
         )
+
+        # Optionally, you can print the source documents to see where the information came from
+        if 'source_documents' in response:
+            print("Source Documents:")
+            for doc in response['source_documents']:
+                print(f"- {doc.metadata.get('source', 'Unknown source')}: {doc.page_content[:100]}...")
+
         st.rerun()
 
 
@@ -160,17 +190,22 @@ st.markdown(
 uploaded_file = st.file_uploader("Upload your legal document", type="pdf")
 
 if uploaded_file is not None:
-    settings = Settings()
-    chroma_client = chromadb.Client(settings)
-    collection = chroma_client.create_collection(name="user-upload")
+    # settings = Settings()
+    # chroma_client = chromadb.Client(settings)
+    # collection = chroma_client.create_collection(name="user-upload")
     uploaded_file.seek(0)
     text = process.extract_text_from_pdf(uploaded_file)
     chunks = process.chunk_text(text)    
     st.session_state.user_chunks = chunks
     st.success(f"Uploaded {uploaded_file.name} successfully with {len(chunks)} chunks")
     # st.session_state.chroma_db.add_texts(chunks)
-    collection.add(chunks)
-    st.success("Document vectorized successfully!")
+    # collection.add(chunks)
+    st.session_state.chroma_collection.add(
+        documents=chunks,
+        ids=[f"doc_{i}" for i in range(len(chunks))],
+        metadatas=[{"source": "user_upload"} for _ in chunks] #range(len(chunks))],
+    )
+    st.success("Document processed and vectorized successfully!")
     # texts = {uploaded_file.name: text}
     # pdf_files = [uploaded_file.name]
     #     chunked_texts = {pdf: chunk_text(texts[pdf]) for pdf in pdf_files}
