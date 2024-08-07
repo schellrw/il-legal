@@ -15,7 +15,7 @@ from langchain.retrievers import MergerRetriever
 from dotenv import load_dotenv
 import os
 from utils import process
-# from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma as LangChainChroma
 import chromadb
 # from chromadb.config import Settings
 # from chromadb.utils import embedding_functions
@@ -73,7 +73,7 @@ def initialize_session_state():
         chroma_client = chromadb.PersistentClient(path=":memory:")
         chroma_collection = chroma_client.get_or_create_collection(
             name="user_docs",
-            embedding_function=embeddings
+            # embedding_function=embeddings
         )
             # chroma_db_impl="duckdb+parquet",
             # persist_directory=":memory:",
@@ -82,7 +82,16 @@ def initialize_session_state():
         #     name="user_docs",
         #     embedding_function=embeddings
         # )
-        chroma_retriever = chroma_collection.as_retriever()
+        
+        # Create LangChain Chroma wrapper
+        langchain_chroma = LangChainChroma(
+            client=chroma_client,
+            collection_name="user_docs",
+            embedding_function=embeddings
+        )        
+        
+        # chroma_retriever = chroma_collection.as_retriever()
+        chroma_retriever = langchain_chroma.as_retriever()
         
         # Combine retrievers
         combined_retriever = MergerRetriever(retrievers=[pinecone_retriever, chroma_retriever])
@@ -128,6 +137,7 @@ def initialize_session_state():
 
         st.session_state.conversation = retrieval_chain
         st.session_state.chroma_collection = chroma_collection
+        st.session_state.langchain_chroma = langchain_chroma
 
 # File upload and processing
 uploaded_file = st.file_uploader("Upload your legal document", type="pdf")
@@ -141,11 +151,31 @@ if uploaded_file is not None:
         st.success(f"Uploaded {uploaded_file.name} successfully with {len(chunks)} chunks")
 
         # Add chunks to Chroma
+        ids = [f"doc_{i}" for i in range(len(chunks))]
+        metadatas = [{"source": "user_upload"} for _ in chunks] #range(len(chunks))],
         st.session_state.chroma_collection.add(
             documents=chunks,
-            ids=[f"doc_{i}" for i in range(len(chunks))],
-            metadatas=[{"source": "user_upload"} for _ in chunks] #range(len(chunks))],
+            ids=ids,
+            metadatas=metadatas
         )
+
+        # Add chunks to LangChain Chroma wrapper
+        st.session_state.lanchain_chroma.add_texts(
+            texts=chunks,
+            metadatas=metadatas
+        )
+
+        # st.session_state.chroma_collection.add(
+        #     documents=chunks,
+        #     ids=ids,
+        #     metadatas=metadatas
+        # )
+
+        # st.session_state.chroma_collection.add(
+        #     documents=chunks,
+        #     ids=[f"doc_{i}" for i in range(len(chunks))],
+        #     metadatas=[{"source": "user_upload"} for _ in chunks] #range(len(chunks))],
+        # )
         st.success("Document processed and vectorized successfully!")
 
     except Exception as e:
