@@ -10,7 +10,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from dotenv import load_dotenv
 import os
-from .utils import process
+from utils import process
 from langchain_community.vectorstores import Chroma
 # import chromadb
 # from chromadb.config import Settings
