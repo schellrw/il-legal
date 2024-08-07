@@ -15,7 +15,10 @@ from utils import process
 # from langchain_community.vectorstores import Chroma
 import chromadb
 from chromadb.config import Settings
-from chromadb.utils import embedding_functions
+# from chromadb.utils import embedding_functions
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 # Load environment variables from the .env file
 load_dotenv()
