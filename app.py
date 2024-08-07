@@ -66,7 +66,7 @@ def initialize_session_state():
         settings = Settings(
             chroma_db_impl="duckdb+parquet",
             persist_directory=":memory:",
-            # anonymized_telemetry=False,
+            anonymized_telemetry=False,
         )
         chroma_client = chromadb.Client(settings)
         embedding_function = embedding_functions.HuggingFaceEmbeddingFunction(
