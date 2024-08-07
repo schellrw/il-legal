@@ -17,7 +17,7 @@ import os
 from utils import process
 # from langchain_community.vectorstores import Chroma
 import chromadb
-from chromadb.config import Settings
+# from chromadb.config import Settings
 # from chromadb.utils import embedding_functions
 
 # Load environment variables from the .env file
@@ -65,15 +65,23 @@ def initialize_session_state():
         )
         
         # Initialize Chroma for client uploads
-        chroma_client = chromadb.Client(Settings(
-            chroma_db_impl="duckdb+parquet",
-            persist_directory=":memory:",
-            anonymized_telemetry=False,
-        ))
-        chroma_collection = chroma_client.create_collection(
+        # chroma_client = chromadb.Client(Settings(
+        #     chroma_db_impl="duckdb+parquet",
+        #     persist_directory=":memory:",
+        #     anonymized_telemetry=False,
+        # ))
+        chroma_client = chromadb.PersistentClient(path=":memory:")
+        chroma_collection = chroma_client.get_or_create_collection(
             name="user_docs",
             embedding_function=embeddings
         )
+            # chroma_db_impl="duckdb+parquet",
+            # persist_directory=":memory:",
+            # anonymized_telemetry=False,
+        # chroma_collection = chroma_client.create_collection(
+        #     name="user_docs",
+        #     embedding_function=embeddings
+        # )
         chroma_retriever = chroma_collection.as_retriever()
         
         # Combine retrievers
