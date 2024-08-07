@@ -139,48 +139,6 @@ def initialize_session_state():
         st.session_state.chroma_collection = chroma_collection
         st.session_state.langchain_chroma = langchain_chroma
 
-# File upload and processing
-uploaded_file = st.file_uploader("Upload your legal document", type="pdf")
-
-if uploaded_file is not None:
-    try:
-        uploaded_file.seek(0)
-        text = process.extract_text_from_pdf(uploaded_file)
-        chunks = process.chunk_text(text)
-        st.session_state.user_chunks = chunks
-        st.success(f"Uploaded {uploaded_file.name} successfully with {len(chunks)} chunks")
-
-        # Add chunks to Chroma
-        ids = [f"doc_{i}" for i in range(len(chunks))]
-        metadatas = [{"source": "user_upload"} for _ in chunks] #range(len(chunks))],
-        st.session_state.chroma_collection.add(
-            documents=chunks,
-            ids=ids,
-            metadatas=metadatas
-        )
-
-        # Add chunks to LangChain Chroma wrapper
-        st.session_state.lanchain_chroma.add_texts(
-            texts=chunks,
-            metadatas=metadatas
-        )
-
-        # st.session_state.chroma_collection.add(
-        #     documents=chunks,
-        #     ids=ids,
-        #     metadatas=metadatas
-        # )
-
-        # st.session_state.chroma_collection.add(
-        #     documents=chunks,
-        #     ids=[f"doc_{i}" for i in range(len(chunks))],
-        #     metadatas=[{"source": "user_upload"} for _ in chunks] #range(len(chunks))],
-        # )
-        st.success("Document processed and vectorized successfully!")
-
-    except Exception as e:
-        st.error(f"An error occurred while processing {uploaded_file.name}: {str(e)}")
-
 
 def on_submit(user_input):
     if user_input:
@@ -230,6 +188,49 @@ st.markdown(
     Let's get started! How may I help you today?
     """
 )
+
+# File upload and processing
+uploaded_file = st.file_uploader("Upload your legal document", type="pdf")
+
+if uploaded_file is not None:
+    try:
+        uploaded_file.seek(0)
+        text = process.extract_text_from_pdf(uploaded_file)
+        chunks = process.chunk_text(text)
+        st.session_state.user_chunks = chunks
+        st.success(f"Uploaded {uploaded_file.name} successfully with {len(chunks)} chunks")
+
+        # Add chunks to Chroma
+        ids = [f"doc_{i}" for i in range(len(chunks))]
+        metadatas = [{"source": "user_upload"} for _ in chunks] #range(len(chunks))],
+        st.session_state.chroma_collection.add(
+            documents=chunks,
+            ids=ids,
+            metadatas=metadatas
+        )
+
+        # Add chunks to LangChain Chroma wrapper
+        st.session_state.langchain_chroma.add_texts(
+            texts=chunks,
+            metadatas=metadatas
+        )
+
+        # st.session_state.chroma_collection.add(
+        #     documents=chunks,
+        #     ids=ids,
+        #     metadatas=metadatas
+        # )
+
+        # st.session_state.chroma_collection.add(
+        #     documents=chunks,
+        #     ids=[f"doc_{i}" for i in range(len(chunks))],
+        #     metadatas=[{"source": "user_upload"} for _ in chunks] #range(len(chunks))],
+        # )
+        st.success("Document processed and vectorized successfully!")
+
+    except Exception as e:
+        st.error(f"An error occurred while processing {uploaded_file.name}: {str(e)}")
+
 
 chat_placeholder = st.container()
 
