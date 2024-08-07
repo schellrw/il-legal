@@ -63,7 +63,11 @@ def initialize_session_state():
         # docsearch = PineconeVectorStore.from_existing_index(index_name=PINECONE_INDEX, embedding=embeddings)
         
         # Initialize Chroma for client uploads
-        settings = Settings()
+        settings = Settings(
+            chroma_db_impl="duckdb+parquet",
+            persist_directory=":memory:",
+            # anonymized_telemetry=False,
+        )
         chroma_client = chromadb.Client(settings)
         embedding_function = embedding_functions.HuggingFaceEmbeddingFunction(
             api_key=HUGGINGFACE_API_TOKEN,
