@@ -52,53 +52,33 @@ def initialize_session_state():
         st.session_state.history = []
     if "conversation" not in st.session_state:
         embeddings = download_hugging_face_embeddings()
+        
+        # Initialize Pinecone
         pc = Pinecone(api_key=PINECONE_API_KEY)
         index = pc.Index(PINECONE_INDEX)
-        pinecone_retriever = PineconeVectorStore.from_existing_index(
-            index_name=PINECONE_INDEX,
-            embedding=embeddings,
-            search_kwargs={
-                    'filter': {'source': 'user_id'},
-                    }).as_retriever()
-        # docsearch = PineconeVectorStore.from_existing_index(index_name=PINECONE_INDEX, embedding=embeddings)
+        pinecone_docsearch = PineconeVectorStore.from_existing_index(index_name=PINECONE_INDEX, embedding=embeddings)
+        pinecone_retriever = pinecone_docsearch.as_retriever(
+            search_kwargs={'filter': {'source': 'user_id'}}
+        )
         
         # Initialize Chroma for client uploads
-        settings = Settings(
+        chroma_client = chromadb.Client(Settings(
             chroma_db_impl="duckdb+parquet",
             persist_directory=":memory:",
             anonymized_telemetry=False,
-        )
-        chroma_client = chromadb.Client(settings)
-        embedding_function = embedding_functions.HuggingFaceEmbeddingFunction(
-            api_key=HUGGINGFACE_API_TOKEN,
-            model_name=EMBEDDINGS_MODEL
-        )
-        st.session_state.chroma_collection = chroma_client.create_collection(
+        ))
+        chroma_collection = chroma_client.create_collection(
             name="user_docs",
-            embedding_function=embedding_function
+            embedding_function=embeddings
         )
-
-        # Create a Chroma retriever
-        chroma_retriever = st.session_state.chroma_collection.as_retriever()
+        chroma_retriever = chroma_collection.as_retriever()
         
-        # Combine the retrievers
+        # Combine retrievers
         combined_retriever = MergerRetriever(retrievers=[pinecone_retriever, chroma_retriever])
 
-        # Get the collection
-        # collection = chroma_client.get_collection(collection_name)
-        
-        # st.session_state.chroma_db = Chroma(embedding_function=embeddings) #, client=docsearch.client)
-        #     chroma_db_impl="duckdb+parquet",
-        #     persist_directory="db",
-        #     anonymized_telemetry=False,
-        #     )
-        # docsearch.client = chromadb.Client(Settings=settings)
-        
-        
-        
-        repo_id = CHAT_MODEL
+        # Initialize LLM and chain
         llm = HuggingFaceEndpoint(
-            repo_id=repo_id,
+            repo_id=CHAT_MODEL,
             model_kwargs={"huggingface_api_token":HUGGINGFACE_API_TOKEN},
             temperature=0.5,  ## make st.slider, subsequently
             top_k=10,  ## make st.slider, subsequently
@@ -119,27 +99,47 @@ def initialize_session_state():
             template=prompt_template, 
             input_variables=["context", "question"])
         
-        message_history = ChatMessageHistory()
         memory = ConversationBufferMemory(
             memory_key="chat_history",
             output_key="answer",
-            chat_memory=message_history,
+            chat_memory=ChatMessageHistory(),
             return_messages=True,
-            )
+        )
+        
         retrieval_chain = ConversationalRetrievalChain.from_llm(
             llm=llm,
             chain_type="stuff",
             retriever=combined_retriever,
-            # retriever=docsearch.as_retriever(
-            #     search_kwargs={
-            #         'filter': {'source': 'user_id'},
-            #         }),
             return_source_documents=True,
             combine_docs_chain_kwargs={"prompt": PROMPT},
             memory= memory
-            )
+        )
 
         st.session_state.conversation = retrieval_chain
+        st.session_state.chroma_collection = chroma_collection
+
+# File upload and processing
+uploaded_file = st.file_uploader("Upload your legal document", type="pdf")
+
+if uploaded_file is not None:
+    try:
+        uploaded_file.seek(0)
+        text = process.extract_text_from_pdf(uploaded_file)
+        chunks = process.chunk_text(text)
+        st.session_state.user_chunks = chunks
+        st.success(f"Uploaded {uploaded_file.name} successfully with {len(chunks)} chunks")
+
+        # Add chunks to Chroma
+        st.session_state.chroma_collection.add(
+            documents=chunks,
+            ids=[f"doc_{i}" for i in range(len(chunks))],
+            metadatas=[{"source": "user_upload"} for _ in chunks] #range(len(chunks))],
+        )
+        st.success("Document processed and vectorized successfully!")
+
+    except Exception as e:
+        st.error(f"An error occurred while processing {uploaded_file.name}: {str(e)}")
+
 
 def on_submit(user_input):
     if user_input:
@@ -163,7 +163,6 @@ def on_submit(user_input):
                 print(f"- {doc.metadata.get('source', 'Unknown source')}: {doc.page_content[:100]}...")
 
         st.rerun()
-
 
 initialize_session_state()
 
@@ -190,29 +189,6 @@ st.markdown(
     Let's get started! How may I help you today?
     """
 )
-
-uploaded_file = st.file_uploader("Upload your legal document", type="pdf")
-
-if uploaded_file is not None:
-    # settings = Settings()
-    # chroma_client = chromadb.Client(settings)
-    # collection = chroma_client.create_collection(name="user-upload")
-    uploaded_file.seek(0)
-    text = process.extract_text_from_pdf(uploaded_file)
-    chunks = process.chunk_text(text)    
-    st.session_state.user_chunks = chunks
-    st.success(f"Uploaded {uploaded_file.name} successfully with {len(chunks)} chunks")
-    # st.session_state.chroma_db.add_texts(chunks)
-    # collection.add(chunks)
-    st.session_state.chroma_collection.add(
-        documents=chunks,
-        ids=[f"doc_{i}" for i in range(len(chunks))],
-        metadatas=[{"source": "user_upload"} for _ in chunks] #range(len(chunks))],
-    )
-    st.success("Document processed and vectorized successfully!")
-    # texts = {uploaded_file.name: text}
-    # pdf_files = [uploaded_file.name]
-    #     chunked_texts = {pdf: chunk_text(texts[pdf]) for pdf in pdf_files}
 
 chat_placeholder = st.container()
 
