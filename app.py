@@ -12,8 +12,8 @@ from dotenv import load_dotenv
 import os
 from utils import process
 from langchain_community.vectorstores import Chroma
-# import chromadb
-# from chromadb.config import Settings
+import chromadb
+from chromadb.config import Settings
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -55,14 +55,22 @@ def initialize_session_state():
         docsearch = PineconeVectorStore.from_existing_index(index_name=PINECONE_INDEX, embedding=embeddings)
         
         # Initialize Chroma for client uploads
+        settings = Settings()
+        chroma_client = chromadb.Client(settings)
+        # Define your collection schema
+        collection_name = 'user-data'
+        chroma_client.create_collection(collection_name)
+
+        # Get the collection
+        # collection = chroma_client.get_collection(collection_name)
+        
         st.session_state.chroma_db = Chroma(embedding_function=embeddings) #, client=docsearch.client)
-        # settings = Settings()
         #     chroma_db_impl="duckdb+parquet",
         #     persist_directory="db",
         #     anonymized_telemetry=False,
         #     )
         # docsearch.client = chromadb.Client(Settings=settings)
-        # chroma_client = chromadb.Client(settings)
+        
         
         
         repo_id = CHAT_MODEL
