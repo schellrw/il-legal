@@ -1,3 +1,6 @@
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 from dataclasses import dataclass
 from typing import Literal
 import streamlit as st
@@ -16,9 +19,6 @@ from utils import process
 import chromadb
 from chromadb.config import Settings
 # from chromadb.utils import embedding_functions
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 # Load environment variables from the .env file
 load_dotenv()
