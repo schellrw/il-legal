@@ -55,11 +55,8 @@ def initialize_session_state():
         docsearch = PineconeVectorStore.from_existing_index(index_name=PINECONE_INDEX, embedding=embeddings)
         
         # Initialize Chroma for client uploads
-        settings = Settings()
-        chroma_client = chromadb.Client(settings)
-        # Define your collection schema
-        collection_name = 'user-data'
-        chroma_client.create_collection(collection_name)
+        # settings = Settings()
+        # chroma_client = chromadb.Client(settings)
 
         # Get the collection
         # collection = chroma_client.get_collection(collection_name)
@@ -163,14 +160,17 @@ st.markdown(
 uploaded_file = st.file_uploader("Upload your legal document", type="pdf")
 
 if uploaded_file is not None:
+    settings = Settings()
+    chroma_client = chromadb.Client(settings)
+    collection = chroma_client.create_collection(name="user-upload")
     uploaded_file.seek(0)
     text = process.extract_text_from_pdf(uploaded_file)
-    chunks = process.chunk_text(text)
+    chunks = process.chunk_text(text)    
     st.session_state.user_chunks = chunks
     st.success(f"Uploaded {uploaded_file.name} successfully with {len(chunks)} chunks")
-    st.session_state.chroma_db.add_texts(chunks)
-    st.success("Document processed successfully!")
-    
+    # st.session_state.chroma_db.add_texts(chunks)
+    collection.add(chunks)
+    st.success("Document vectorized successfully!")
     # texts = {uploaded_file.name: text}
     # pdf_files = [uploaded_file.name]
     #     chunked_texts = {pdf: chunk_text(texts[pdf]) for pdf in pdf_files}
