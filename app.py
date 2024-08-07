@@ -10,6 +10,10 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from dotenv import load_dotenv
 import os
+from utils import process
+from langchain_community.vectorstores import Chroma
+# import chromadb
+# from chromadb.config import Settings
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -50,6 +54,17 @@ def initialize_session_state():
         index = pc.Index(PINECONE_INDEX)
         docsearch = PineconeVectorStore.from_existing_index(index_name=PINECONE_INDEX, embedding=embeddings)
         
+        # Initialize Chroma for client uploads
+        st.session_state.chroma_db = Chroma(embedding_function=embeddings) #, client=docsearch.client)
+        # settings = Settings()
+        #     chroma_db_impl="duckdb+parquet",
+        #     persist_directory="db",
+        #     anonymized_telemetry=False,
+        #     )
+        # docsearch.client = chromadb.Client(Settings=settings)
+        # chroma_client = chromadb.Client(settings)
+        
+        
         repo_id = CHAT_MODEL
         llm = HuggingFaceEndpoint(
             repo_id=repo_id,
@@ -73,7 +88,6 @@ def initialize_session_state():
             template=prompt_template, 
             input_variables=["context", "question"])
         
-        #chain_type_kwargs = {"prompt": PROMPT}
         message_history = ChatMessageHistory()
         memory = ConversationBufferMemory(
             memory_key="chat_history",
@@ -94,20 +108,6 @@ def initialize_session_state():
             )
 
         st.session_state.conversation = retrieval_chain
-
-# def on_click_callback():
-#     human_prompt = st.session_state.human_prompt
-#     st.session_state.human_prompt=""
-#     response = st.session_state.conversation(
-#         human_prompt
-#     )
-#     llm_response = response['answer']
-#     st.session_state.history.append(
-#         Message("🗣️ Human", human_prompt)
-#     )
-#     st.session_state.history.append(
-#         Message("🧑‍⚖️ AI Lawyer", llm_response)
-#     )
 
 def on_submit(user_input):
     if user_input:
@@ -151,6 +151,21 @@ st.markdown(
     Let's get started! How may I help you today?
     """
 )
+
+uploaded_file = st.file_uploader("Upload your legal document", type="pdf")
+
+if uploaded_file is not None:
+    uploaded_file.seek(0)
+    text = process.extract_text_from_pdf(uploaded_file)
+    chunks = process.chunk_text(text)
+    st.session_state.user_chunks = chunks
+    st.success(f"Uploaded {uploaded_file.name} successfully with {len(chunks)} chunks")
+    st.session_state.chroma_db.add_texts(chunks)
+    st.success("Document processed successfully!")
+    
+    # texts = {uploaded_file.name: text}
+    # pdf_files = [uploaded_file.name]
+    #     chunked_texts = {pdf: chunk_text(texts[pdf]) for pdf in pdf_files}
 
 chat_placeholder = st.container()
 
