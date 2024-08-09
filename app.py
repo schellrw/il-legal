@@ -189,6 +189,16 @@ st.markdown(
     """
 )
 
+
+chat_placeholder = st.container()
+
+with chat_placeholder:
+    for chat in st.session_state.history:
+        st.markdown(f"{chat.origin} : {chat.message}")
+
+user_input = st.chat_input("Enter your question here...")
+
+
 # File upload and processing
 uploaded_file = st.file_uploader("Upload your legal document", type="pdf")
 
@@ -215,30 +225,10 @@ if uploaded_file is not None:
             metadatas=metadatas
         )
 
-        # st.session_state.chroma_collection.add(
-        #     documents=chunks,
-        #     ids=ids,
-        #     metadatas=metadatas
-        # )
-
-        # st.session_state.chroma_collection.add(
-        #     documents=chunks,
-        #     ids=[f"doc_{i}" for i in range(len(chunks))],
-        #     metadatas=[{"source": "user_upload"} for _ in chunks] #range(len(chunks))],
-        # )
         st.success("Document processed and vectorized successfully!")
 
     except Exception as e:
         st.error(f"An error occurred while processing {uploaded_file.name}: {str(e)}")
-
-
-chat_placeholder = st.container()
-
-with chat_placeholder:
-    for chat in st.session_state.history:
-        st.markdown(f"{chat.origin} : {chat.message}")
-
-user_input = st.chat_input("Enter your question here...")
 
 if user_input:
     on_submit(user_input)
