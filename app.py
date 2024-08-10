@@ -176,7 +176,7 @@ st.markdown(
     
     - Answer questions on various aspects of Illinois criminal law.
     - Guide you through legal processes relevant to Illinois.
-    - Provide information on your rights and responsibilities as per Illinois legal standards.
+    - Provide information on your rights and responsibilities regarding Illinois legal standards.
     
     ⚖️ **Disclaimer:**
     
@@ -185,10 +185,10 @@ st.markdown(
     🤖 **Getting Started:**
     
     Feel free to ask any legal question related to Illinois criminal law. I'm here to assist you!
-    Let's get started! How may I help you today?
+    If you have any documents pertinent to your case to better assist you, please upload them below.
     """
 )
-
+# Let's get started! How may I help you today?
 
 chat_placeholder = st.container()
 
