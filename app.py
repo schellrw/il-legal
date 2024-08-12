@@ -1,11 +1,11 @@
 __import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+import logging
 from dataclasses import dataclass
 from typing import Literal
 import streamlit as st
 from dotenv import load_dotenv
-import os
 from utils import process
 from chat.bot import ChatBot
 
@@ -17,6 +17,7 @@ class Message:
 
 
 def initialize_session_state():
+    """Initialize session state variables."""
     if "history" not in st.session_state:
         st.session_state.history = []
     if "conversation" not in st.session_state:
@@ -25,8 +26,8 @@ def initialize_session_state():
         st.session_state.chroma_collection = chroma_collection
         st.session_state.langchain_chroma = langchain_chroma
 
-
 def on_submit(user_input):
+    """Handle user input and generate response."""
     if user_input:
         response = st.session_state.conversation({
             "question":user_input
@@ -39,11 +40,11 @@ def on_submit(user_input):
             Message("🧑‍⚖️ AI Lawyer", llm_response)
         )
 
-        # Optionally, you can print the source documents to see where the information came from
-        if 'source_documents' in response:
-            print("Source Documents:")
-            for doc in response['source_documents']:
-                print(f"- {doc.metadata.get('source', 'Unknown source')}: {doc.page_content[:100]}...")
+        # # Optionally, you can print the source documents to see where the information came from
+        # if 'source_documents' in response:
+        #     print("Source Documents:")
+        #     for doc in response['source_documents']:
+        #         print(f"- {doc.metadata.get('source', 'Unknown source')}: {doc.page_content[:100]}...")
 
         st.rerun()
 
@@ -80,7 +81,7 @@ with chat_placeholder:
     for chat in st.session_state.history:
         st.markdown(f"{chat.origin} : {chat.message}")
 
-user_input = st.chat_input("Enter your question here...")
+user_question = st.chat_input("Enter your question here...")
 
 # File upload and processing
 uploaded_file = st.file_uploader("Upload your legal document", type="pdf")
@@ -111,8 +112,9 @@ if uploaded_file is not None:
         st.success("Document processed and vectorized successfully!")
 
     except Exception as e:
+        logging.exception(f"An error occurred while processing {uploaded_file.name}: {str(e)}")
         st.error(f"An error occurred while processing {uploaded_file.name}: {str(e)}")
 
 
-if user_input:
-    on_submit(user_input)
+if user_question:
+    on_submit(user_question)
