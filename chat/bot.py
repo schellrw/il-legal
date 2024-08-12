@@ -97,8 +97,8 @@ def ChatBot():
         combine_docs_chain_kwargs={"prompt": PROMPT},
         memory= memory
     )
-
-    return {"retrieval_chain": retrieval_chain, "chroma_collection": chroma_collection, "langchain_chroma": langchain_chroma}
+    return retrieval_chain, chroma_collection, langchain_chroma
+    # return {"retrieval_chain": retrieval_chain, "chroma_collection": chroma_collection, "langchain_chroma": langchain_chroma}
 
     # st.session_state.conversation = retrieval_chain
     # st.session_state.chroma_collection = chroma_collection
