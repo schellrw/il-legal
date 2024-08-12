@@ -1,3 +1,4 @@
 [server]
 headless = true
-scriptPath = "../streamlit/app.py"
+scriptPath = "streamlit_app.py"
+# scriptPath = "../streamlit/app.py"
