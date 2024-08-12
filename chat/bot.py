@@ -1,5 +1,4 @@
-from flask import Flask, jsonify, request
-# from chatbot import ChatBot
+import streamlit as st
 from langchain_pinecone.vectorstores import PineconeVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings, HuggingFaceEndpoint
 from langchain.prompts import PromptTemplate
@@ -10,8 +9,7 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain.retrievers import MergerRetriever
 from dotenv import load_dotenv
 import os
-from utils import process
-from chat.bot import ChatBot
+# from utils import process
 from langchain_community.vectorstores import Chroma as LangChainChroma
 import chromadb
 # from chromadb.config import Settings
@@ -27,14 +25,17 @@ HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 EMBEDDINGS_MODEL = os.getenv("EMBEDDINGS_MODEL")
 CHAT_MODEL = os.getenv("CHAT_MODEL")
 
-app = Flask(__name__)
+# Supplement with streamlit secrets if None
+if None in [PINECONE_API_KEY, PINECONE_INDEX, HUGGINGFACE_API_TOKEN, EMBEDDINGS_MODEL, CHAT_MODEL]:
+    PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
+    PINECONE_INDEX = st.secrets["PINECONE_INDEX"]
+    HUGGINGFACE_API_TOKEN = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
+    EMBEDDINGS_MODEL = st.secrets["EMBEDDINGS_MODEL"]
+    CHAT_MODEL = st.secrets["CHAT_MODEL"]
 
-@app.route('/chat', methods=['POST'])
-def chat():
-    user_input = request.json['input']
-
-    # Initialize the chatbot components
+def ChatBot():
     embeddings = HuggingFaceEmbeddings(model_name=EMBEDDINGS_MODEL)
+    # Initialize Pinecone
     pc = Pinecone(api_key=PINECONE_API_KEY)
     index = pc.Index(PINECONE_INDEX)
     pinecone_docsearch = PineconeVectorStore.from_existing_index(index_name=PINECONE_INDEX, embedding=embeddings)
@@ -44,13 +45,17 @@ def chat():
     chroma_client = chromadb.PersistentClient(path=":memory:")
     chroma_collection = chroma_client.get_or_create_collection(
         name="user_docs",
+        # embedding_function=embeddings
     )
     langchain_chroma = LangChainChroma(
         client=chroma_client,
         collection_name="user_docs",
         embedding_function=embeddings
-    )            
+    )        
+    
+    # chroma_retriever = chroma_collection.as_retriever()
     chroma_retriever = langchain_chroma.as_retriever()
+    
     # Combine retrievers
     combined_retriever = MergerRetriever(retrievers=[pinecone_retriever, chroma_retriever])
 
@@ -83,7 +88,7 @@ def chat():
         chat_memory=ChatMessageHistory(),
         return_messages=True,
     )
-        
+    
     retrieval_chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
         chain_type="stuff",
@@ -93,43 +98,6 @@ def chat():
         memory= memory
     )
 
-    response = retrieval_chain({"question":user_input})
-    answer = response['answer']
-    source_documents = response['source_documents']
-
-    return jsonify({'answer': answer, 'source_documents': [{'page_content': doc.page_content, 'metadata': doc.metadata} for doc in source_documents]})
-
-
-# File upload and processing
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    uploaded_file = request.files['file']
-
-    if uploaded_file is not None:
-        try:
-            uploaded_file.seek(0)
-            text = process.extract_text_from_pdf(uploaded_file)
-            chunks = process.chunk_text(text)
-            # Add chunks to Chroma
-            ids = [f"doc_{i}" for i in range(len(chunks))]
-            metadatas = [{"source": "user_upload"} for _ in chunks] #range(len(chunks))],
-            chroma_collection.add(
-                documents=chunks,
-                ids=ids,
-                metadatas=metadatas
-            )
-
-            # Add chunks to LangChain Chroma wrapper
-            st.session_state.langchain_chroma.add_texts(
-                texts=chunks,
-                metadatas=metadatas
-            )
-
-            st.success("Document processed and vectorized successfully!")
-
-        except Exception as e:
-            st.error(f"An error occurred while processing {uploaded_file.name}: {str(e)}")
-
-
-if __name__ == '__main__':
-    app.run()
+    # st.session_state.conversation = retrieval_chain
+    # st.session_state.chroma_collection = chroma_collection
+    # st.session_state.langchain_chroma = langchain_chroma
