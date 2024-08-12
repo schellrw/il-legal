@@ -198,6 +198,8 @@ with chat_placeholder:
 
 user_input = st.chat_input("Enter your question here...")
 
+if user_input:
+    on_submit(user_input)
 
 # File upload and processing
 uploaded_file = st.file_uploader("Upload your legal document", type="pdf")
@@ -229,6 +231,3 @@ if uploaded_file is not None:
 
     except Exception as e:
         st.error(f"An error occurred while processing {uploaded_file.name}: {str(e)}")
-
-if user_input:
-    on_submit(user_input)
