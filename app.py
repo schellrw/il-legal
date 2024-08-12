@@ -20,10 +20,10 @@ def initialize_session_state():
     if "history" not in st.session_state:
         st.session_state.history = []
     if "conversation" not in st.session_state:
-        chatbot = ChatBot()
-        st.session_state.conversation = chatbot.retrieval_chain
-        st.session_state.chroma_collection = chatbot.chroma_collection
-        st.session_state.langchain_chroma = chatbot.langchain_chroma
+        retrieval_chain, chroma_collection, langchain_chroma = ChatBot()
+        st.session_state.conversation = retrieval_chain
+        st.session_state.chroma_collection = chroma_collection
+        st.session_state.langchain_chroma = langchain_chroma
 
 
 def on_submit(user_input):
