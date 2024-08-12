@@ -98,6 +98,8 @@ def ChatBot():
         memory= memory
     )
 
+    return {"retrieval_chain": retrieval_chain, "chroma_collection": chroma_collection, "langchain_chroma": langchain_chroma}
+
     # st.session_state.conversation = retrieval_chain
     # st.session_state.chroma_collection = chroma_collection
     # st.session_state.langchain_chroma = langchain_chroma
