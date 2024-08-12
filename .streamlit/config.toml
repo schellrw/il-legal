@@ -1,4 +1,0 @@
-[server]
-headless = true
-scriptPath = "streamlit_app.py"
-# scriptPath = "../streamlit/app.py"
