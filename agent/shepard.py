@@ -29,7 +29,7 @@ class AgentState(TypedDict):
     case_citations: Annotated[list[str], "List of found case citations"]
     search_results: Annotated[list[str], "Search results from DuckDuckGo"]
 
-def create_shepard_agent():
+def create_agent_shepard():
     # Initialize LLM
     llm = HuggingFaceEndpoint(
         repo_id=CHAT_MODEL,
