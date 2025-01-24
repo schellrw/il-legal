@@ -8,6 +8,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from utils import process
 from chat.bot import ChatBot
+from agent.shepard import create_agent_shepard, process_query
 
 @dataclass
 class Message:
@@ -25,6 +26,8 @@ def initialize_session_state():
         st.session_state.conversation = retrieval_chain
         st.session_state.chroma_collection = chroma_collection
         st.session_state.langchain_chroma = langchain_chroma
+    if "agent_shepard" not in st.session_state:
+        st.session_state.agent_shepard = create_agent_shepard()
 
 def on_submit(user_input):
     """Handle user input and generate response."""
@@ -80,6 +83,25 @@ chat_placeholder = st.container()
 with chat_placeholder:
     for chat in st.session_state.history:
         st.markdown(f"{chat.origin} : {chat.message}")
+        # Add Shepardize button after each AI response
+        if chat.origin == "🧑‍⚖️ AI Lawyer":
+            if st.button("🔍 Shepardize", key=f"shepardize_{len(st.session_state.history)}"):
+                with st.spinner("Searching for relevant case law..."):
+                    # Get the context from recent messages (last 2-3 exchanges)
+                    context_depth = st.slider("Context depth", 1, 5, 2)
+                    recent_context = "\n".join([
+                        msg.message for msg in st.session_state.history[-2*context_depth:]
+                    ])
+                    
+                    # Process the context through Shepard agent
+                    case_law_analysis = process_query(recent_context, st.session_state.agent_shepard)
+                    
+                    # Add the Shepard analysis to the chat history
+                    st.session_state.history.append(
+                        Message("🧑‍⚖️ AI Lawyer", 
+                               "📚 **Related Case Law Analysis:**\n\n" + case_law_analysis)
+                    )
+                st.rerun()
 
 user_question = st.chat_input("Enter your question here...")
 
