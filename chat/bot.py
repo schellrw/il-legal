@@ -42,7 +42,8 @@ def ChatBot():
     pinecone_retriever = pinecone_docsearch.as_retriever(
         search_kwargs={'filter': {'source': 'user_id'}}
     )
-    chroma_client = chromadb.PersistentClient(path=":memory:")
+    # chroma_client = chromadb.PersistentClient(path=":memory:")
+    chroma_client = chromadb.Client()
     chroma_collection = chroma_client.get_or_create_collection(
         name="user_docs",
         # embedding_function=embeddings

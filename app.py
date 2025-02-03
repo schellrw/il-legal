@@ -1,6 +1,6 @@
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+# __import__('pysqlite3')
+# import sys
+# sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 import logging
 from dataclasses import dataclass
 from typing import Literal
@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from utils import process
 from chat.bot import ChatBot
 from agent.shepard import create_agent_shepard, process_query
+import uuid
 
 @dataclass
 class Message:
@@ -27,7 +28,11 @@ def initialize_session_state():
         st.session_state.chroma_collection = chroma_collection
         st.session_state.langchain_chroma = langchain_chroma
     if "agent_shepard" not in st.session_state:
+        logging.info("Initializing Shepard agent...")
         st.session_state.agent_shepard = create_agent_shepard()
+        logging.info("Shepard agent initialized")
+    if "shepardize_clicked" not in st.session_state:
+        st.session_state.shepardize_clicked = None
 
 def on_submit(user_input):
     """Handle user input and generate response."""
@@ -81,27 +86,48 @@ st.markdown(
 chat_placeholder = st.container()
 
 with chat_placeholder:
-    for chat in st.session_state.history:
+    for idx, chat in enumerate(st.session_state.history):
         st.markdown(f"{chat.origin} : {chat.message}")
         # Add Shepardize button after each AI response
         if chat.origin == "🧑‍⚖️ AI Lawyer":
-            if st.button("🔍 Shepardize", key=f"shepardize_{len(st.session_state.history)}"):
+            button_key = f"shepardize_{idx}_{uuid.uuid4()}"
+            
+            # Create a callback function for the button
+            def shepardize_callback(idx=idx):
+                st.session_state.shepardize_clicked = idx
+            
+            # Use the button with the callback
+            st.button("🔍 Shepardize", key=button_key, on_click=shepardize_callback, args=(idx,))
+            
+            # Check if this message's button was clicked
+            if st.session_state.shepardize_clicked == idx:
+                logging.info(f"Processing Shepardize request for message {idx}")
                 with st.spinner("Searching for relevant case law..."):
-                    # Get the context from recent messages (last 2-3 exchanges)
-                    context_depth = st.slider("Context depth", 1, 5, 2)
-                    recent_context = "\n".join([
-                        msg.message for msg in st.session_state.history[-2*context_depth:]
-                    ])
-                    
-                    # Process the context through Shepard agent
-                    case_law_analysis = process_query(recent_context, st.session_state.agent_shepard)
-                    
-                    # Add the Shepard analysis to the chat history
-                    st.session_state.history.append(
-                        Message("🧑‍⚖️ AI Lawyer", 
-                               "📚 **Related Case Law Analysis:**\n\n" + case_law_analysis)
-                    )
-                st.rerun()
+                    try:
+                        context_depth = min(3, idx + 1)
+                        recent_messages = st.session_state.history[max(0, idx - context_depth + 1):idx + 1]
+                        recent_context = "\n".join([msg.message for msg in recent_messages])
+                        
+                        case_law_analysis = process_query(recent_context, st.session_state.agent_shepard)
+                        
+                        # Add the analysis to chat history
+                        st.session_state.history.append(
+                            Message("🧑‍⚖️ AI Lawyer", 
+                                   f"📚 **Related Case Law Analysis:**\n\n{case_law_analysis}")
+                        )
+                        
+                        # Reset the clicked state
+                        st.session_state.shepardize_clicked = None
+                        st.rerun()
+                        
+                    except Exception as e:
+                        logging.error(f"Error during Shepardize process: {str(e)}")
+                        st.error(f"An error occurred while analyzing case law: {str(e)}")
+                        st.session_state.shepardize_clicked = None
+
+# Add debug output at the bottom of the page
+if st.session_state.shepardize_clicked is not None:
+    st.write(f"Debug: Shepardize clicked for message {st.session_state.shepardize_clicked}")
 
 user_question = st.chat_input("Enter your question here...")
 
