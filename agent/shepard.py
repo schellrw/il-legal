@@ -43,8 +43,10 @@ def create_agent_shepard():
 
     # Initialize DuckDuckGo search with more specific configuration
     search = DuckDuckGoSearchAPIWrapper(
-        region="wt-wt",  # Worldwide region
-        time="y",        # Past year
+        region="us-en",   # United States region
+        time="",          # No time limit (all time)
+        # region="wt-wt",  # Worldwide region
+        # time="y",        # Past year
         max_results=5    # Limit results
     )
     
