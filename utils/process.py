@@ -1,4 +1,5 @@
-import pymupdf ## fitz  # PyMuPDF
+import fitz as pymupdf
+# import pymupdf ## fitz  # PyMuPDF
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 def extract_text_from_pdf(pdf_file):

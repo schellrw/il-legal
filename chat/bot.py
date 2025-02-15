@@ -7,7 +7,7 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain.retrievers import MergerRetriever
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import os
 # from utils import process
 from langchain_community.vectorstores import Chroma as LangChainChroma
@@ -16,7 +16,7 @@ import chromadb
 # from chromadb.utils import embedding_functions
 
 # Load environment variables from the .env file
-load_dotenv()
+# load_dotenv()
 
 # Fetch environment variables
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
@@ -42,7 +42,8 @@ def ChatBot():
     pinecone_retriever = pinecone_docsearch.as_retriever(
         search_kwargs={'filter': {'source': 'user_id'}}
     )
-    chroma_client = chromadb.PersistentClient(path=":memory:")
+    # chroma_client = chromadb.PersistentClient(path=":memory:")
+    chroma_client = chromadb.Client()
     chroma_collection = chroma_client.get_or_create_collection(
         name="user_docs",
         # embedding_function=embeddings
