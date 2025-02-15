@@ -67,6 +67,7 @@ def ChatBot():
         # model_kwargs={"huggingface_api_token":HUGGINGFACE_API_TOKEN},
         temperature=0.5,  ## make st.slider, subsequently
         top_k=10,  ## make st.slider, subsequently
+        task="text-generation",
     )
 
     prompt_template = """
