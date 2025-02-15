@@ -6,7 +6,7 @@ from langchain.agents import Tool
 from langgraph.graph import StateGraph, END
 from typing import TypedDict, Annotated, Sequence
 from langchain_core.messages import BaseMessage, FunctionMessage, HumanMessage
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import os
 import re
 from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
@@ -15,7 +15,7 @@ import time
 import logging
 
 # Load environment variables
-load_dotenv()
+# load_dotenv()
 
 # Fetch environment variables
 HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")

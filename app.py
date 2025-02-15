@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Literal
 import streamlit as st
 from dotenv import load_dotenv
+load_dotenv()
 from utils import process
 from chat.bot import ChatBot
 from agent.shepard import create_agent_shepard, process_query
