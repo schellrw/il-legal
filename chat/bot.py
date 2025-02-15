@@ -63,7 +63,8 @@ def ChatBot():
     # Initialize LLM and chain
     llm = HuggingFaceEndpoint(
         repo_id=CHAT_MODEL,
-        model_kwargs={"huggingface_api_token":HUGGINGFACE_API_TOKEN},
+        huggingfacehub_api_token=HUGGINGFACE_API_TOKEN, 
+        # model_kwargs={"huggingface_api_token":HUGGINGFACE_API_TOKEN},
         temperature=0.5,  ## make st.slider, subsequently
         top_k=10,  ## make st.slider, subsequently
     )
