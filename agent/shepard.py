@@ -40,7 +40,6 @@ def create_agent_shepard():
         huggingfacehub_api_token=HUGGINGFACE_API_TOKEN, 
         # model_kwargs={"huggingface_api_token": HUGGINGFACE_API_TOKEN},
         temperature=0.5,
-        task="text-generation",
     )
 
     # Initialize DuckDuckGo search with more specific configuration
@@ -54,7 +53,8 @@ def create_agent_shepard():
     
     search_tool = Tool(
         name="DuckDuckGo Search",
-        func=lambda q: search.run(q, max_results=5),
+        # func=lambda q: search.run(q, max_results=5),
+        func=lambda q: search.run(q),
         description="Search for Illinois case law on FindLaw",
         handle_tool_error=True
     )
@@ -63,9 +63,10 @@ def create_agent_shepard():
         try:
             # Extract key legal concepts from the message
             legal_concepts_prompt = """
-            Extract the key legal concepts and factual elements from this text:
+            Extract the key legal concepts and factual elements from this text, limited to 3-4 key points:
             {text}
             Focus on: crimes, defenses, circumstances, and legal principles.
+            Provide only the most relevant concepts, one per line.
             """
             
             key_elements = llm.invoke(legal_concepts_prompt.format(
@@ -76,12 +77,16 @@ def create_agent_shepard():
             search_queries = [
                 f"site:caselaw.findlaw.com/court/illinois {concept.strip()}" 
                 for concept in key_elements.split('\n') if concept.strip()
-            ]
+            ][:3]  # Limit to top 3 most relevant concepts
             
             all_results = []
-            for query in search_queries[:3]:  # Limit to top 3 concepts
+            # for query in search_queries[:3]:  # Limit to top 3 concepts
+            for query in search_queries:
                 try:
                     results = search_tool.run(query)
+                    # Truncate individual search results if too long
+                    if len(results) > 1000:
+                        results = results[:1000] + "..."
                     all_results.append(f"Search for '{query}':\n{results}\n")
                 except Exception as e:
                     logging.error(f"Search error for query '{query}': {str(e)}")
@@ -100,21 +105,23 @@ def create_agent_shepard():
     def format_response(state: AgentState) -> AgentState:
         try:
             analysis_prompt = """
-            Analyze the following Illinois case law search results and provide a detailed analysis.
+            Analyze the following Illinois case law search results and provide a concise analysis.
+            Keep your response under 1000 words.
             
             Context: {context}
             Search Results: {results}
             
             Please provide:
-            1. Most relevant cases found (with citations)
-            2. Key holdings and principles from these cases
-            3. How these cases might apply to the current situation
-            4. Any important distinctions or variations in how courts have ruled
-            5. Trends in how Illinois courts approach this issue
-            
+            1. Most relevant cases (with citations)
+            2. Key holdings and principles
+            3. How it applies to the current situation
+            4. Any important distinctions or variations
+                        
             Format your response to clearly separate these elements.
+            Be brief but thorough.
             """
-            
+            #5. Trends in how Illinois courts approach this issue
+
             response = llm.invoke(analysis_prompt.format(
                 context=state["messages"][-1].content,
                 results=state["search_results"]
