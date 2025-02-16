@@ -37,8 +37,10 @@ def create_agent_shepard():
     # Initialize LLM
     llm = HuggingFaceEndpoint(
         repo_id=CHAT_MODEL,
-        model_kwargs={"huggingface_api_token": HUGGINGFACE_API_TOKEN},
+        huggingfacehub_api_token=HUGGINGFACE_API_TOKEN, 
+        # model_kwargs={"huggingface_api_token": HUGGINGFACE_API_TOKEN},
         temperature=0.5,
+        task="text-generation",
     )
 
     # Initialize DuckDuckGo search with more specific configuration
